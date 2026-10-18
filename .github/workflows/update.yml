@@ -1,0 +1,56 @@
+# Prüft täglich, ob es neue Releases der Apps oder von mcp-auth-proxy gibt.
+# Neue Versionen werden nur eingetragen, wenn der Selbsttest auf beiden Architekturen
+# besteht. Danach zeigt Home Assistant das Update an; installiert wird erst auf Klick.
+name: Neue Versionen prüfen
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Neueste Releases prüfen
+        id: upd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 .github/scripts/update_versions.py
+
+      - if: steps.upd.outputs.changed == 'true'
+        uses: docker/setup-qemu-action@v3
+      - if: steps.upd.outputs.changed == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Bauen und testen (amd64)
+        if: steps.upd.outputs.changed == 'true'
+        run: |
+          docker buildx build --platform linux/amd64 --load \
+            --build-arg BUILD_ARCH=amd64 --build-arg BUILD_VERSION=ci -t artcraft-mcp:amd64 artcraft_mcp
+          docker run --rm --platform linux/amd64 -e SELFTEST_WAIT=10 artcraft-mcp:amd64 artcraft-selftest
+
+      - name: Bauen und testen (aarch64)
+        if: steps.upd.outputs.changed == 'true'
+        run: |
+          docker buildx build --platform linux/arm64 --load \
+            --build-arg BUILD_ARCH=aarch64 --build-arg BUILD_VERSION=ci -t artcraft-mcp:arm64 artcraft_mcp
+          docker run --rm --platform linux/arm64 -e SELFTEST_WAIT=30 artcraft-mcp:arm64 artcraft-selftest
+
+      - name: Eintragen
+        if: steps.upd.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artcraft_mcp/Dockerfile artcraft_mcp/config.yaml artcraft_mcp/CHANGELOG.md
+          git commit -m "${{ steps.upd.outputs.summary }}"
+          git push
