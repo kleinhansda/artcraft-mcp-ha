@@ -1,0 +1,39 @@
+#!/bin/bash
+# Selbsttest: startet jede App mit genau den Optionen aus apps.sh und prüft,
+# ob sie auf MCP "initialize" und "tools/list" antwortet. Läuft im Build (CI)
+# nach jedem Versionswechsel. Rückgabewert 0 = alles in Ordnung.
+set -uo pipefail
+source /usr/local/lib/artcraft/apps.sh
+
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+rc=0
+
+echo "Architektur: $(uname -m)"
+cat /usr/local/share/artcraft-versions
+
+if mcp-auth-proxy --help >/dev/null 2>&1; then
+  echo "ok    mcp-auth-proxy startet"
+else
+  echo "FEHLER mcp-auth-proxy startet nicht"; rc=1
+fi
+
+init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"artcraft-selftest","version":"1"}}}'
+bereit='{"jsonrpc":"2.0","method":"notifications/initialized"}'
+liste='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+
+for app in "${APPS[@]}"; do
+  app_cmd "$app" "$work"
+  out="$({ printf '%s\n' "$init" "$bereit" "$liste"; sleep "${SELFTEST_WAIT:-10}"; } \
+    | timeout 180 "${CMD[@]}" 2>"$work/$app.err")"
+  tools="$(jq -R 'fromjson? | select(.id == 2) | .result.tools | length' <<<"$out" | head -n1)"
+  if [[ "$tools" =~ ^[0-9]+$ ]] && (( tools > 0 )); then
+    echo "ok    $app: $tools Tools (${CMD[*]})"
+  else
+    echo "FEHLER $app antwortet nicht wie erwartet (${CMD[*]})"
+    sed 's/^/      /' "$work/$app.err" | tail -n 20
+    rc=1
+  fi
+done
+
+exit $rc
