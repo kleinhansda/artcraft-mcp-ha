@@ -1,6 +1,6 @@
 # ArtCraft MCP für Home Assistant
 
-Home-Assistant-Add-on (App), das VectorCraft, PhotoCraft und PdfCraft von
+Home-Assistant-Add-on (App), das VectorCraft, PhotoCraft und PdfCraft (plus einen Datei-Server für den Arbeitsordner) von
 [storytold](https://github.com/storytold) als Remote-MCP-Server für Claude bereitstellt.
 Login über einen OIDC-Anbieter (z. B. Pocket ID) mit
 [mcp-auth-proxy](https://github.com/sigbit/mcp-auth-proxy), Zugang z. B. über das
@@ -19,6 +19,7 @@ Oder von Hand: Einstellungen → Apps (Add-ons) → App Store → ⋮ → Reposi
 | [`artcraft_mcp/CHANGELOG.md`](artcraft_mcp/CHANGELOG.md) | Versionen |
 | [`docs/NOTIZEN.md`](docs/NOTIZEN.md) | Hintergrund: Apps im Vergleich, Testergebnisse, Ressourcen, verworfene Varianten |
 | `artcraft_mcp/Dockerfile` | Image: Debian, Release-Binaries mit Prüfsummen, feste Versionen |
+| `artcraft_mcp/rootfs/usr/local/lib/artcraft/files_mcp.py` | Kleiner MCP-Server für den Arbeitsordner (`files_list`, `file_get`, `file_put`) |
 | `artcraft_mcp/rootfs/run.sh` | Startet je App einen Proxy, startet abgestürzte Dienste einzeln neu |
 | `artcraft_mcp/rootfs/usr/local/lib/artcraft/apps.sh` | Startbefehle und Ports der Apps |
 | `.github/workflows/update.yml` | Prüft täglich neue Releases, testet und erhöht dann die Version |

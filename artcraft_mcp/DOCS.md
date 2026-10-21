@@ -11,6 +11,7 @@ OIDC-Anbieter (z. B. Pocket ID) anmelden.
 | VectorCraft | Vektorgrafik, Etiketten, SVG/PDF-Export | 8081 | 32 |
 | PhotoCraft | Bildbearbeitung, PSD | 8082 | 25 |
 | PdfCraft | PDFs bearbeiten, prüfen, zusammenführen | 8083 | 17 (kompakt) |
+| Dateien | Arbeitsordner für Claude: auflisten, holen, ablegen | 8084 | 3 |
 
 Hintergrund, Testergebnisse und Entscheidungen stehen in
 [docs/NOTIZEN.md](https://github.com/kleinhansda/artcraft-mcp-ha/blob/main/docs/NOTIZEN.md).
@@ -40,7 +41,7 @@ Hintergrund, Testergebnisse und Entscheidungen stehen in
 | `oidc_provider_name` | Name auf der Anmeldeseite, z. B. `Pocket ID` |
 | `oidc_client_id`, `oidc_client_secret` | Ein Client für alle Apps |
 | `oidc_allowed_users` | Optional, kommagetrennt (Standard: E-Mail-Adresse). Zusätzlich zur Gruppenbeschränkung beim Anbieter |
-| `vectorcraft_url`, `photocraft_url`, `pdfcraft_url` | Öffentliche Adresse ohne Pfad, z. B. `https://vectorcraft.example.com`. Leer = App wird nicht gestartet |
+| `vectorcraft_url`, `photocraft_url`, `pdfcraft_url`, `files_url` | Öffentliche Adresse ohne Pfad, z. B. `https://vectorcraft.example.com`. Leer = App wird nicht gestartet |
 | `pdfcraft_compact` | `true`: Kern-Tools plus `tool_search` und `tool_call` statt über 160 Tools |
 | `work_dir` | Gemeinsamer Arbeitsordner unter `/share`, Standard `/share/artcraft/work` |
 | `legacy_auth_dir` | Nur beim Umzug von einem Docker-Stack, siehe unten |
@@ -53,6 +54,7 @@ Ein Client, je App eine Callback-URL:
 https://<vectorcraft-hostname>/.auth/oidc/callback
 https://<photocraft-hostname>/.auth/oidc/callback
 https://<pdfcraft-hostname>/.auth/oidc/callback
+https://<files-hostname>/.auth/oidc/callback
 ```
 
 Public client aus. Den Zugriff beim Anbieter auf eine Gruppe beschränken.
@@ -67,12 +69,13 @@ Je App ein öffentlicher Hostname, Pfad leer, Dienst-URL `http://<add-on-hostnam
 | `vectorcraft.example.com` | `http://<add-on-hostname>:8081` |
 | `photocraft.example.com` | `http://<add-on-hostname>:8082` |
 | `pdfcraft.example.com` | `http://<add-on-hostname>:8083` |
+| `files.example.com` | `http://<add-on-hostname>:8084` |
 
 Den Add-on-Hostnamen zeigt Home Assistant auf der Info-Seite der App (Form `xxxxxxxx-artcraft-mcp`).
 Keine Cloudflare-Access-App davor, der Login läuft über den Proxy. Falls die WAF-Regel
 „Block AI bots“ aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
 
-Die Ports müssen unter **Netzwerk** nicht freigegeben werden. Cloudflared erreicht die App im
+Die Ports (8081 bis 8084) müssen unter **Netzwerk** nicht freigegeben werden. Cloudflared erreicht die App im
 internen Netz. Nur ohne Tunnel (eigener Reverse Proxy) dort Host-Ports eintragen.
 
 ## Claude verbinden
@@ -81,7 +84,7 @@ Claude → Einstellungen → Connectors → Add custom connector, je App
 `https://<hostname>/mcp`, keine Client-ID. Beim Verbinden öffnet sich die Anmeldung des
 OIDC-Anbieters.
 
-Drei Connectoren statt einem: So wird pro Chat nur die App zugeschaltet, die gebraucht wird.
+Ein Connector je App (bis zu vier) statt einem: So wird pro Chat nur die App zugeschaltet, die gebraucht wird.
 
 In den Connector-Einstellungen die UI-Tools auf **Blocked** setzen, sie funktionieren ohne
 Bildschirm nicht:
@@ -101,6 +104,24 @@ Wege in den Ordner: Samba, WebDAV oder Syncthing.
 - **Ein Prozess je App für alle Chats:** Das geöffnete Dokument ist geteilt und bleibt zwischen
   Aufrufen offen. Ergebnisse immer mit `save_file` oder `export` sichern. Ein Neustart der App
   verwirft offene Dokumente.
+
+### Dateien-Connector (`files_url`)
+
+Ein kleiner eigener MCP-Server für den Arbeitsordner. Damit kommt Claude an Ergebnisse der Apps
+heran (z. B. ein exportiertes WebP aus PhotoCraft) und kann Dateien dort ablegen, ohne Umweg über
+Syncthing und einen Rechner.
+
+| Tool | Wirkung |
+|---|---|
+| `files_list` | Listet Dateien und Ordner (optional rekursiv, höchstens 500 Einträge) |
+| `file_get` | Liefert eine Datei als Binärinhalt (Resource mit Blob), höchstens 10 MB |
+| `file_put` | Legt eine Datei ab (base64), **überschreibt nur mit `overwrite=true`**, höchstens 10 MB |
+
+- Pfade sind relativ zu `work_dir`. `..` und Symlinks nach draußen werden abgelehnt.
+- Die Grenze lässt sich über die Umgebungsvariable `FILES_MAX_BYTES` im Image ändern, nicht in der Oberfläche.
+- Der Server ist wie die Apps hinter dem Login-Proxy. Wer Zugriff auf den Connector hat, kann den
+  **gesamten** Arbeitsordner lesen und schreiben. Deshalb nur Arbeitskopien dort ablegen.
+- Der Connector braucht eigene Hostnamen, Callback-URL und Tunnel-Eintrag wie die anderen Apps.
 
 ## Updates
 
@@ -151,7 +172,8 @@ PhotoCraft braucht mit einem 24-MP-Foto rund 0,5 GB. Auf Geräten mit wenig RAM 
 | Log: `<app>: beendet, Neustart in …` wiederholt | App oder Proxy beendet sich sofort | Zeilen davor im Log lesen, oft eine falsche URL oder ein nicht erreichbarer OIDC-Anbieter |
 | Login-Seite leer, kein Redirect | Client-ID oder Secret falsch | Konfiguration prüfen |
 | Anbieter meldet ungültige Redirect-URI | Callback des Hostnamens fehlt im Client | Alle Callback-URLs eintragen |
-| 502 über Cloudflare | App gestoppt oder falscher Port im Tunnel | Log prüfen, Ports 8081 bis 8083 |
+| 502 über Cloudflare | App gestoppt oder falscher Port im Tunnel | Log prüfen, Ports 8081 bis 8084 |
+| `Pfad liegt außerhalb des Arbeitsordners` | Pfad zeigt aus `work_dir` heraus (Dateien-Connector) | Relativen Pfad unter `work_dir` verwenden |
 | `outside the write root` | Datei liegt nicht im Arbeitsordner | Pfad unter `work_dir` verwenden |
 | Claude kommt nicht durch, Cloudflare blockt | WAF-Regel gegen KI-Bots | Ausnahme für die Hostnamen |
 | Installation bricht beim Bauen ab | GitHub nicht erreichbar oder Release geändert | Später erneut versuchen, sonst Issue im Repo |
