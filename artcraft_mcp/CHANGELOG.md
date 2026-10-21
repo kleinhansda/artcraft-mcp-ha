@@ -3,6 +3,14 @@
 Neue Versionen der Apps trägt der Workflow `update.yml` automatisch ein,
 nachdem der Selbsttest auf aarch64 und amd64 bestanden ist.
 
+## 1.1.0 (2026-10-21)
+
+- Neue App „Dateien“ (Port 8084, Option `files_url`): MCP-Server für den Arbeitsordner mit
+  `files_list`, `file_get` und `file_put`. Damit erreicht Claude in der Cloud Exporte der Apps und
+  kann Dateien ablegen. Ohne `files_url` wird sie nicht gestartet, bestehende Installationen
+  ändern sich nicht.
+- Image enthält jetzt `python3` (Debian, mit Standardbibliothek).
+
 ## 1.0.1 (2026-10-21)
 
 - VectorCraft 0.13.1 → 0.14.0
