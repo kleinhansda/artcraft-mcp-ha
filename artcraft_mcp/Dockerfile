@@ -23,7 +23,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN set -eu; \
   apt-get update; \
-  apt-get install -y --no-install-recommends ca-certificates curl jq; \
+  apt-get install -y --no-install-recommends ca-certificates curl jq python3-minimal; \
   case "$(uname -m)" in \
     aarch64) A=aarch64; P=arm64; PSUM="$PROXY_SHA256_ARM64" ;; \
     x86_64)  A=x86_64;  P=amd64; PSUM="$PROXY_SHA256_AMD64" ;; \
@@ -52,6 +52,6 @@ RUN set -eu; \
   rm -rf /var/lib/apt/lists/*
 
 COPY rootfs /
-RUN chmod 755 /run.sh /usr/local/bin/artcraft-selftest
+RUN chmod 755 /run.sh /usr/local/bin/artcraft-selftest /usr/local/lib/artcraft/files_mcp.py
 
 CMD ["/run.sh"]

@@ -22,6 +22,9 @@ configuration:
   pdfcraft_url:
     name: PdfCraft-URL
     description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = PdfCraft nicht starten.
+  files_url:
+    name: Dateien-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Stellt den Arbeitsordner als MCP bereit (Dateien auflisten, holen, ablegen). Leer = nicht starten.
   pdfcraft_compact:
     name: PdfCraft kompakt
     description: Nur Kern-Tools plus tool_search und tool_call anbieten (17 statt über 160 Tools). Schont den Kontext in Claude.
@@ -35,3 +38,4 @@ network:
   8081/tcp: VectorCraft. Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
   8082/tcp: PhotoCraft. Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
   8083/tcp: PdfCraft. Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8084/tcp: Dateien (Arbeitsordner). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
