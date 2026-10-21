@@ -9,7 +9,7 @@ nachdem der Selbsttest auf aarch64 und amd64 bestanden ist.
   `files_list`, `file_get` und `file_put`. Damit erreicht Claude in der Cloud Exporte der Apps und
   kann Dateien ablegen. Ohne `files_url` wird sie nicht gestartet, bestehende Installationen
   ändern sich nicht.
-- Image enthält jetzt `python3-minimal`.
+- Image enthält jetzt `python3` (Debian, mit Standardbibliothek).
 
 ## 1.0.1 (2026-10-21)
 

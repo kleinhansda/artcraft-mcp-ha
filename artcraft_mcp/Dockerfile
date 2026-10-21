@@ -23,7 +23,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN set -eu; \
   apt-get update; \
-  apt-get install -y --no-install-recommends ca-certificates curl jq python3-minimal; \
+  apt-get install -y --no-install-recommends ca-certificates curl jq python3; \
   case "$(uname -m)" in \
     aarch64) A=aarch64; P=arm64; PSUM="$PROXY_SHA256_ARM64" ;; \
     x86_64)  A=x86_64;  P=amd64; PSUM="$PROXY_SHA256_AMD64" ;; \
