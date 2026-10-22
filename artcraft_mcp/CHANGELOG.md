@@ -3,6 +3,11 @@
 Neue Versionen der Apps trägt der Workflow `update.yml` automatisch ein,
 nachdem der Selbsttest auf aarch64 und amd64 bestanden ist.
 
+## 1.1.1 (2026-10-22)
+
+- PhotoCraft 0.11.1 → 0.12.0
+- PdfCraft 0.10.1 → 0.11.0
+
 ## 1.1.0 (2026-10-21)
 
 - Neue App „Dateien“ (Port 8084, Option `files_url`): MCP-Server für den Arbeitsordner mit
