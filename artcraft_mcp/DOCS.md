@@ -43,7 +43,7 @@ Hintergrund, Testergebnisse und Entscheidungen stehen in
 ## Konfiguration
 
 | Option | Bedeutung |
-|---|---|
+|---|---|---|
 | `oidc_configuration_url` | Discovery-URL, z. B. `https://id.example.com/.well-known/openid-configuration` |
 | `oidc_provider_name` | Name auf der Anmeldeseite, z. B. `Pocket ID` |
 | `oidc_client_id`, `oidc_client_secret` | Ein Client für alle Apps |
@@ -66,7 +66,7 @@ https://<wordcraft-hostname>/.auth/oidc/callback
 https://<deckcraft-hostname>/.auth/oidc/callback
 https://<gridcraft-hostname>/.auth/oidc/callback
 https://<figcraft-hostname>/.auth/oidc/callback
-https://<craft-anychostname>/.auth/oidc/callback
+https://<craft-anything-hostname>/.auth/oidc/callback
 https://<files-hostname>/.auth/oidc/callback
 ```
 
@@ -92,7 +92,7 @@ Je App ein öffentlicher Hostname, Pfad leer, Dienst-URL `http://<add-on-hostnam
 
 Den Add-on-Hostnamen zeigt Home Assistant auf der Info-Seite der App (Form `xxxxxxxx-artcraft-mcp`).
 Keine Cloudflare-Access-App davor, der Login läuft über den Proxy. Falls die WAF-Regel
-„Block AI bots“ aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
+"Block AI bots" aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
 
 Die Ports (8081 bis 8090) müssen unter **Netzwerk** nicht freigegeben werden. Cloudflared erreicht die App im
 internen Netz. Nur ohne Tunnel (eigener Reverse Proxy) dort Host-Ports eintragen.
@@ -161,8 +161,7 @@ dann die Liste der geblockten UI-Tools in Claude kurz durchsehen.
 Wer die Apps bisher als eigene Container (z. B. per Portainer) betrieben hat:
 
 1. `legacy_auth_dir` auf den Ordner mit den alten Proxy-Daten setzen, z. B. `/share/artcraft/auth`
-   (mit Unterordnern `vectorcraft`, `photocraft`, `pdfcraft`, `cadcraft`, `wordcraft`, `deckcraft`,
-   `gridcraft`, `figcraft`, `craft-anything`). Beim ersten Start werden sie
+   (mit Unterordnern `vectorcraft`, `photocraft`, `pdfcraft`, `cadcraft`, `wordcraft`, `deckcraft`, `gridcraft`, `figcraft`, `craft-anything`). Beim ersten Start werden sie
    einmalig nach `/data` kopiert, das Original bleibt liegen. Bleiben die Hostnamen gleich, müssen
    die Connectoren in Claude nicht neu verbunden werden.
 2. Gleiche URLs und denselben OIDC-Client eintragen, App starten, Log prüfen.
