@@ -1,17 +1,24 @@
 # ArtCraft MCP
 
-Macht VectorCraft, PhotoCraft und PdfCraft ([storytold](https://github.com/storytold)) als
+Macht VectorCraft, PhotoCraft und PdfCraft sowie CADCraft, WordCraft, DeckCraft, GridCraft,
+FigCraft und Craft Anything ([storytold](https://github.com/storytold)) als
 Remote-MCP-Server für Claude erreichbar, auch für die Smartphone-App. Vor jeder App sitzt ein
 [mcp-auth-proxy](https://github.com/sigbit/mcp-auth-proxy). Er ist gegenüber Claude der
 OAuth-Server (mit Dynamic Client Registration) und lässt nur Nutzer durch, die sich bei deinem
 OIDC-Anbieter (z. B. Pocket ID) anmelden.
 
-| App | Zweck | Port | Tools |
-|---|---|---|---|
-| VectorCraft | Vektorgrafik, Etiketten, SVG/PDF-Export | 8081 | 32 |
-| PhotoCraft | Bildbearbeitung, PSD | 8082 | 25 |
-| PdfCraft | PDFs bearbeiten, prüfen, zusammenführen | 8083 | 17 (kompakt) |
-| Dateien | Arbeitsordner für Claude: auflisten, holen, ablegen | 8084 | 3 |
+| App | Zweck | Port |
+|---|---|---|
+| VectorCraft | Vektorgrafik, Etiketten, SVG/PDF-Export | 8081 |
+| PhotoCraft | Bildbearbeitung, PSD | 8082 |
+| PdfCraft | PDFs bearbeiten, prüfen, zusammenführen | 8083 |
+| CADCraft | 2D-CAD, Zeichnungen (DXF/DWG) | 8085 |
+| WordCraft | Textverarbeitung (.docx, .doc) | 8086 |
+| DeckCraft | Präsentationen (.pptx) | 8087 |
+| GridCraft | Tabellenkalkulation (.xlsx) | 8088 |
+| FigCraft | Interface-Design, Prototyping | 8089 |
+| Craft Anything | Reverse Engineering, Rebuild | 8090 |
+| Dateien | Arbeitsordner für Claude: auflisten, holen, ablegen | 8084 |
 
 Hintergrund, Testergebnisse und Entscheidungen stehen in
 [docs/NOTIZEN.md](https://github.com/kleinhansda/artcraft-mcp-ha/blob/main/docs/NOTIZEN.md).
@@ -41,7 +48,7 @@ Hintergrund, Testergebnisse und Entscheidungen stehen in
 | `oidc_provider_name` | Name auf der Anmeldeseite, z. B. `Pocket ID` |
 | `oidc_client_id`, `oidc_client_secret` | Ein Client für alle Apps |
 | `oidc_allowed_users` | Optional, kommagetrennt (Standard: E-Mail-Adresse). Zusätzlich zur Gruppenbeschränkung beim Anbieter |
-| `vectorcraft_url`, `photocraft_url`, `pdfcraft_url`, `files_url` | Öffentliche Adresse ohne Pfad, z. B. `https://vectorcraft.example.com`. Leer = App wird nicht gestartet |
+| `vectorcraft_url`, `photocraft_url`, `pdfcraft_url`, `cadcraft_url`, `wordcraft_url`, `deckcraft_url`, `gridcraft_url`, `figcraft_url`, `craft_anything_url`, `files_url` | Öffentliche Adresse ohne Pfad, z. B. `https://vectorcraft.example.com`. Leer = App wird nicht gestartet |
 | `pdfcraft_compact` | `true`: Kern-Tools plus `tool_search` und `tool_call` statt über 160 Tools |
 | `work_dir` | Gemeinsamer Arbeitsordner unter `/share`, Standard `/share/artcraft/work` |
 | `legacy_auth_dir` | Nur beim Umzug von einem Docker-Stack, siehe unten |
@@ -54,11 +61,17 @@ Ein Client, je App eine Callback-URL:
 https://<vectorcraft-hostname>/.auth/oidc/callback
 https://<photocraft-hostname>/.auth/oidc/callback
 https://<pdfcraft-hostname>/.auth/oidc/callback
+https://<cadcraft-hostname>/.auth/oidc/callback
+https://<wordcraft-hostname>/.auth/oidc/callback
+https://<deckcraft-hostname>/.auth/oidc/callback
+https://<gridcraft-hostname>/.auth/oidc/callback
+https://<figcraft-hostname>/.auth/oidc/callback
+https://<craft-anything-hostname>/.auth/oidc/callback
 https://<files-hostname>/.auth/oidc/callback
 ```
 
 Public client aus. Den Zugriff beim Anbieter auf eine Gruppe beschränken.
-Preis der Vereinfachung: Wer das Secret kennt, kann sich für alle drei Hostnamen ausgeben.
+Preis der Vereinfachung: Wer das Secret kennt, kann sich für alle Hostnamen ausgeben.
 
 ### Cloudflare-Tunnel
 
@@ -69,13 +82,19 @@ Je App ein öffentlicher Hostname, Pfad leer, Dienst-URL `http://<add-on-hostnam
 | `vectorcraft.example.com` | `http://<add-on-hostname>:8081` |
 | `photocraft.example.com` | `http://<add-on-hostname>:8082` |
 | `pdfcraft.example.com` | `http://<add-on-hostname>:8083` |
+| `cadcraft.example.com` | `http://<add-on-hostname>:8085` |
+| `wordcraft.example.com` | `http://<add-on-hostname>:8086` |
+| `deckcraft.example.com` | `http://<add-on-hostname>:8087` |
+| `gridcraft.example.com` | `http://<add-on-hostname>:8088` |
+| `figcraft.example.com` | `http://<add-on-hostname>:8089` |
+| `craft-anything.example.com` | `http://<add-on-hostname>:8090` |
 | `files.example.com` | `http://<add-on-hostname>:8084` |
 
 Den Add-on-Hostnamen zeigt Home Assistant auf der Info-Seite der App (Form `xxxxxxxx-artcraft-mcp`).
 Keine Cloudflare-Access-App davor, der Login läuft über den Proxy. Falls die WAF-Regel
-„Block AI bots“ aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
+"Block AI bots" aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
 
-Die Ports (8081 bis 8084) müssen unter **Netzwerk** nicht freigegeben werden. Cloudflared erreicht die App im
+Die Ports (8081 bis 8090) müssen unter **Netzwerk** nicht freigegeben werden. Cloudflared erreicht die App im
 internen Netz. Nur ohne Tunnel (eigener Reverse Proxy) dort Host-Ports eintragen.
 
 ## Claude verbinden
@@ -84,7 +103,7 @@ Claude → Einstellungen → Connectors → Add custom connector, je App
 `https://<hostname>/mcp`, keine Client-ID. Beim Verbinden öffnet sich die Anmeldung des
 OIDC-Anbieters.
 
-Ein Connector je App (bis zu vier) statt einem: So wird pro Chat nur die App zugeschaltet, die gebraucht wird.
+Ein Connector je App (bis zu elf) statt einem: So wird pro Chat nur die App zugeschaltet, die gebraucht wird.
 
 In den Connector-Einstellungen die UI-Tools auf **Blocked** setzen, sie funktionieren ohne
 Bildschirm nicht:
@@ -95,7 +114,7 @@ Bildschirm nicht:
 
 ## Arbeitsordner
 
-Alle drei Apps lesen und schreiben nur in `work_dir` (Standard `/share/artcraft/work`). Eine in
+Alle Apps lesen und schreiben nur in `work_dir` (Standard `/share/artcraft/work`). Eine in
 VectorCraft exportierte PDF kann so direkt in PdfCraft weiter. Dateien kommen über die üblichen
 Wege in den Ordner: Samba, WebDAV oder Syncthing.
 
@@ -142,7 +161,7 @@ dann die Liste der geblockten UI-Tools in Claude kurz durchsehen.
 Wer die Apps bisher als eigene Container (z. B. per Portainer) betrieben hat:
 
 1. `legacy_auth_dir` auf den Ordner mit den alten Proxy-Daten setzen, z. B. `/share/artcraft/auth`
-   (mit Unterordnern `vectorcraft`, `photocraft`, `pdfcraft`). Beim ersten Start werden sie
+   (mit Unterordnern `vectorcraft`, `photocraft`, `pdfcraft`, `cadcraft`, `wordcraft`, `deckcraft`, `gridcraft`, `figcraft`, `craft-anything`). Beim ersten Start werden sie
    einmalig nach `/data` kopiert, das Original bleibt liegen. Bleiben die Hostnamen gleich, müssen
    die Connectoren in Claude nicht neu verbunden werden.
 2. Gleiche URLs und denselben OIDC-Client eintragen, App starten, Log prüfen.
@@ -154,7 +173,9 @@ Alte und neue Installation stören sich nicht, solange der Tunnel nur auf eine z
 ## Sicherheit
 
 - Login über OIDC, optional zusätzlich `oidc_allowed_users`.
-- Die Apps sind auf `work_dir` begrenzt (Zugriffe außerhalb werden abgelehnt).
+- Die Apps WordCraft, DeckCraft und FigCraft sind auf `work_dir` begrenzt (Zugriffe außerhalb
+  werden abgelehnt). CADCraft, GridCraft und Craft Anything bieten diese Begrenzung nicht, ihre
+  Tools können außerhalb des Arbeitsordners lesen.
 - Das Client-Secret bekommt nur der Proxy, nicht die Apps.
 - Alle Downloads werden beim Bau gegen ihre Prüfsummen geprüft.
 - Proxy-Daten (registrierte Clients, Schlüssel) liegen in `/data` und sind im Backup der App.
@@ -168,11 +189,11 @@ PhotoCraft braucht mit einem 24-MP-Foto rund 0,5 GB. Auf Geräten mit wenig RAM 
 | Symptom | Ursache | Lösung |
 |---|---|---|
 | App startet nicht, Log: `… ist leer` | Pflichtoption fehlt | Konfiguration ergänzen |
-| Log: `Keine App aktiviert` | Keine der drei URLs eingetragen | Mindestens eine URL eintragen |
+| Log: `Keine App aktiviert` | Keine der URLs eingetragen | Mindestens eine URL eintragen |
 | Log: `<app>: beendet, Neustart in …` wiederholt | App oder Proxy beendet sich sofort | Zeilen davor im Log lesen, oft eine falsche URL oder ein nicht erreichbarer OIDC-Anbieter |
 | Login-Seite leer, kein Redirect | Client-ID oder Secret falsch | Konfiguration prüfen |
 | Anbieter meldet ungültige Redirect-URI | Callback des Hostnamens fehlt im Client | Alle Callback-URLs eintragen |
-| 502 über Cloudflare | App gestoppt oder falscher Port im Tunnel | Log prüfen, Ports 8081 bis 8084 |
+| 502 über Cloudflare | App gestoppt oder falscher Port im Tunnel | Log prüfen, Ports 8081 bis 8090 |
 | `Pfad liegt außerhalb des Arbeitsordners` | Pfad zeigt aus `work_dir` heraus (Dateien-Connector) | Relativen Pfad unter `work_dir` verwenden |
 | `outside the write root` | Datei liegt nicht im Arbeitsordner | Pfad unter `work_dir` verwenden |
 | Claude kommt nicht durch, Cloudflare blockt | WAF-Regel gegen KI-Bots | Ausnahme für die Hostnamen |

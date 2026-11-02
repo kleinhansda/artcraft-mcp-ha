@@ -1,8 +1,9 @@
 # ArtCraft MCP für Home Assistant
 
-Home-Assistant-Add-on (App), das VectorCraft, PhotoCraft und PdfCraft (plus einen Datei-Server für den Arbeitsordner) von
-[storytold](https://github.com/storytold) als Remote-MCP-Server für Claude bereitstellt.
-Login über einen OIDC-Anbieter (z. B. Pocket ID) mit
+Home-Assistant-Add-on (App), das VectorCraft, PhotoCraft, PdfCraft, CADCraft, WordCraft,
+DeckCraft, GridCraft, FigCraft und Craft Anything (plus einen Datei-Server für den
+Arbeitsordner) von [storytold](https://github.com/storytold) als Remote-MCP-Server für Claude
+bereitstellt. Login über einen OIDC-Anbieter (z. B. Pocket ID) mit
 [mcp-auth-proxy](https://github.com/sigbit/mcp-auth-proxy), Zugang z. B. über das
 Cloudflared-Add-on.
 

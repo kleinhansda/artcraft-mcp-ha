@@ -1,14 +1,24 @@
-# ArtCraft MCP: VectorCraft, PhotoCraft und PdfCraft (storytold) hinter mcp-auth-proxy.
-# Fertige Release-Binaries von GitHub, kein Rust-Build. Jede Datei wird gegen ihre
-# Prüfsumme geprüft. Die Versionen unten pflegt .github/workflows/update.yml.
+# ArtCraft MCP: VectorCraft, PhotoCraft, PdfCraft und CADCraft, WordCraft, DeckCraft,
+# GridCraft, FigCraft, Craft Anything als MCP-Server über mcp-auth-proxy.
+# Release-Binaries von GitHub, geprüft gegen die SHA256SUMS.txt des Releases.
+# Versionen werden über .github/workflows/update.yml gepflegt.
 FROM debian:bookworm-slim
 
 ARG BUILD_ARCH
 ARG BUILD_VERSION
 
+# Alte Tools
 ARG VECTORCRAFT_VERSION=0.20.0
 ARG PHOTOCRAFT_VERSION=0.19.0
 ARG PDFCRAFT_VERSION=0.17.0
+# Neue Tools
+ARG CADCRAFT_VERSION=0.16.0
+ARG WORDCRAFT_VERSION=0.14.0
+ARG DECKCRAFT_VERSION=0.14.1
+ARG GRIDCRAFT_VERSION=0.15.0
+ARG FIGCRAFT_VERSION=0.14.0
+ARG CRAFT_ANYTHING_VERSION=0.3.0
+# Proxy
 ARG PROXY_VERSION=2.10.2
 ARG PROXY_SHA256_ARM64=924c5335e5f684eb22c681cca1daff86d96fa35f644950cbd8f4c8f3e290bc3d
 ARG PROXY_SHA256_AMD64=1c76b230fdb6c536a0912c059232cba2229acbcf1f02a11a5d0664781326bcd6
@@ -30,6 +40,9 @@ RUN set -eu; \
     *) echo "Nicht unterstützte Architektur: $(uname -m)" >&2; exit 1 ;; \
   esac; \
   cd /tmp; \
+  # hol() lädt ein Release-Archiv, prüft es gegen SHA256SUMS.txt des Releases und
+  # installiert das CLI-Binary nach /usr/local/bin. $1=repo, $2=version, $3=asset-name,
+  # $4=pfad-ins-archiv. Der Proxy behält seine festen SHAs (kein SHA256SUMS.txt).
   hol() { repo=$1; v=$2; name=$3; inner=$4; \
     asset="$name-$v-linux-$A.tar.gz"; \
     base="https://github.com/storytold/$repo/releases/download/v$v"; \
@@ -40,9 +53,16 @@ RUN set -eu; \
       --strip-components="$(echo "$inner" | awk -F/ '{print NF}')" "${asset%.tar.gz}/$inner"; \
     echo "$repo $v" >> /usr/local/share/artcraft-versions; \
     rm -f "$asset" sums; }; \
-  hol vectorcraft "$VECTORCRAFT_VERSION" vectorcraft  bin/vectorcraft-cli; \
-  hol photocraft  "$PHOTOCRAFT_VERSION"  photocraft   bin/photocraft-cli; \
+  # Asset-Name = Repo-Name, nur PdfCraft veröffentlicht zusätzlich ein pdfcraft-cli-Archiv.
+  hol vectorcraft "$VECTORCRAFT_VERSION" vectorcraft bin/vectorcraft-cli; \
+  hol photocraft  "$PHOTOCRAFT_VERSION"  photocraft  bin/photocraft-cli; \
   hol pdfcraft    "$PDFCRAFT_VERSION"    pdfcraft-cli pdfcraft-cli; \
+  hol cadcraft    "$CADCRAFT_VERSION"    cadcraft    bin/cadcraft-cli; \
+  hol wordcraft   "$WORDCRAFT_VERSION"   wordcraft   bin/wordcraft-cli; \
+  hol deckcraft   "$DECKCRAFT_VERSION"   deckcraft   bin/deckcraft-cli; \
+  hol gridcraft   "$GRIDCRAFT_VERSION"   gridcraft   bin/gridcraft-cli; \
+  hol figcraft    "$FIGCRAFT_VERSION"    figcraft    bin/figcraft-cli; \
+  hol craft-anything "$CRAFT_ANYTHING_VERSION" craft-anything bin/craft-anything-cli; \
   curl -fsSL -o /usr/local/bin/mcp-auth-proxy \
     "https://github.com/sigbit/mcp-auth-proxy/releases/download/v$PROXY_VERSION/mcp-auth-proxy-linux-$P"; \
   echo "$PSUM  /usr/local/bin/mcp-auth-proxy" | sha256sum -c -; \

@@ -22,6 +22,24 @@ configuration:
   pdfcraft_url:
     name: PdfCraft URL
     description: Public HTTPS address without a path. Empty = do not start PdfCraft.
+  cadcraft_url:
+    name: CADCraft URL
+    description: Public HTTPS address without a path. Empty = do not start CADCraft.
+  wordcraft_url:
+    name: WordCraft URL
+    description: Public HTTPS address without a path. Empty = do not start WordCraft.
+  deckcraft_url:
+    name: DeckCraft URL
+    description: Public HTTPS address without a path. Empty = do not start DeckCraft.
+  gridcraft_url:
+    name: GridCraft URL
+    description: Public HTTPS address without a path. Empty = do not start GridCraft.
+  figcraft_url:
+    name: FigCraft URL
+    description: Public HTTPS address without a path. Empty = do not start FigCraft.
+  craft_anything_url:
+    name: Craft Anything URL
+    description: Public HTTPS address without a path. Empty = do not start Craft Anything.
   files_url:
     name: Files URL
     description: Public HTTPS address without path. Exposes the work folder as MCP (list, get, put files). Empty = do not start.
@@ -33,9 +51,17 @@ configuration:
     description: Shared folder below /share. The apps may only read and write here.
   legacy_auth_dir:
     name: Old proxy data
-    description: Only when moving from a Docker stack. Folder with subfolders vectorcraft, photocraft, pdfcraft. Copied once if no data exists yet.
+    description: Only when moving from a Docker stack. Folder with subfolders of the apps
+      (vectorcraft, photocraft, pdfcraft, cadcraft, wordcraft, deckcraft, gridcraft, figcraft,
+      craft-anything). Copied once if no data exists yet.
 network:
   8081/tcp: VectorCraft. Only needed without the Cloudflared app.
   8082/tcp: PhotoCraft. Only needed without the Cloudflared app.
   8083/tcp: PdfCraft. Only needed without the Cloudflared app.
   8084/tcp: Files (work folder). Only needed without the Cloudflared app.
+  8085/tcp: CADCraft (2D CAD, DXF/DWG). Only needed without the Cloudflared app.
+  8086/tcp: WordCraft (word processing). Only needed without the Cloudflared app.
+  8087/tcp: DeckCraft (presentations). Only needed without the Cloudflared app.
+  8088/tcp: GridCraft (spreadsheets). Only needed without the Cloudflared app.
+  8089/tcp: FigCraft (interface design). Only needed without the Cloudflared app.
+  8090/tcp: Craft Anything (reverse engineering). Only needed without the Cloudflared app.
