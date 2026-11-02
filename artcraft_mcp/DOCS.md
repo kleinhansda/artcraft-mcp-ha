@@ -13,8 +13,8 @@ OIDC-Anbieter (z. B. Pocket ID) anmelden.
 | PhotoCraft | Bildbearbeitung, PSD | 8082 |
 | PdfCraft | PDFs bearbeiten, prüfen, zusammenführen | 8083 |
 | CADCraft | 2D-CAD, Zeichnungen (DXF/DWG) | 8085 |
-| WordCraft | Textverarbeitung (.docx) | 8086 |
-| DeckCraft | Presentationen (.pptx) | 8087 |
+| WordCraft | Textverarbeitung (.docx, .doc) | 8086 |
+| DeckCraft | Präsentationen (.pptx) | 8087 |
 | GridCraft | Tabellenkalkulation (.xlsx) | 8088 |
 | FigCraft | Interface-Design, Prototyping | 8089 |
 | Craft Anything | Reverse Engineering, Rebuild | 8090 |
@@ -66,7 +66,7 @@ https://<wordcraft-hostname>/.auth/oidc/callback
 https://<deckcraft-hostname>/.auth/oidc/callback
 https://<gridcraft-hostname>/.auth/oidc/callback
 https://<figcraft-hostname>/.auth/oidc/callback
-https://<craft-anything-hostname>/.auth/oidc/callback
+https://<craft-anychostname>/.auth/oidc/callback
 https://<files-hostname>/.auth/oidc/callback
 ```
 
@@ -92,7 +92,7 @@ Je App ein öffentlicher Hostname, Pfad leer, Dienst-URL `http://<add-on-hostnam
 
 Den Add-on-Hostnamen zeigt Home Assistant auf der Info-Seite der App (Form `xxxxxxxx-artcraft-mcp`).
 Keine Cloudflare-Access-App davor, der Login läuft über den Proxy. Falls die WAF-Regel
-„Block AI bots" aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
+„Block AI bots“ aktiv ist, für diese Hostnamen eine Ausnahme anlegen, sonst kommt Claude nicht durch.
 
 Die Ports (8081 bis 8090) müssen unter **Netzwerk** nicht freigegeben werden. Cloudflared erreicht die App im
 internen Netz. Nur ohne Tunnel (eigener Reverse Proxy) dort Host-Ports eintragen.
@@ -103,7 +103,7 @@ Claude → Einstellungen → Connectors → Add custom connector, je App
 `https://<hostname>/mcp`, keine Client-ID. Beim Verbinden öffnet sich die Anmeldung des
 OIDC-Anbieters.
 
-Ein Connector je App statt einem: So wird pro Chat nur die App zugeschaltet, die gebraucht wird.
+Ein Connector je App (bis zu elf) statt einem: So wird pro Chat nur die App zugeschaltet, die gebraucht wird.
 
 In den Connector-Einstellungen die UI-Tools auf **Blocked** setzen, sie funktionieren ohne
 Bildschirm nicht:
@@ -174,7 +174,9 @@ Alte und neue Installation stören sich nicht, solange der Tunnel nur auf eine z
 ## Sicherheit
 
 - Login über OIDC, optional zusätzlich `oidc_allowed_users`.
-- Die Apps sind auf `work_dir` begrenzt (Zugriffe außerhalb werden abgelehnt).
+- Die Apps WordCraft, DeckCraft und FigCraft sind auf `work_dir` begrenzt (Zugriffe außerhalb
+  werden abgelehnt). CADCraft, GridCraft und Craft Anything bieten diese Begrenzung nicht, ihre
+  Tools können außerhalb des Arbeitsordners lesen.
 - Das Client-Secret bekommt nur der Proxy, nicht die Apps.
 - Alle Downloads werden beim Bau gegen ihre Prüfsummen geprüft.
 - Proxy-Daten (registrierte Clients, Schlüssel) liegen in `/data` und sind im Backup der App.

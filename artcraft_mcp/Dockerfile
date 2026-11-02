@@ -60,7 +60,7 @@ RUN set -eu; \
   hol cadcraft    "$CADCRAFT_VERSION"    cadcraft    bin/cadcraft-cli; \
   hol wordcraft   "$WORDCRAFT_VERSION"   wordcraft   bin/wordcraft-cli; \
   hol deckcraft   "$DECKCRAFT_VERSION"   deckcraft   bin/deckcraft-cli; \
-  hol gridcraft   "$GRIDCRAFT_VERSION"  gridcraft   bin/gridcraft-cli; \
+  hol gridcraft   "$GRIDCRAFT_VERSION"   gridcraft   bin/gridcraft-cli; \
   hol figcraft    "$FIGCRAFT_VERSION"    figcraft    bin/figcraft-cli; \
   hol craft-anything "$CRAFT_ANYTHING_VERSION" craft-anything bin/craft-anything-cli; \
   curl -fsSL -o /usr/local/bin/mcp-auth-proxy \
