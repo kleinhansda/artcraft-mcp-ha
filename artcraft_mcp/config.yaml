@@ -29,7 +29,7 @@ ports_description:
   8084/tcp: Dateien, Arbeitsordner (nur nötig ohne Cloudflared-Add-on)
   8085/tcp: CADCraft – 2D-CAD, Zeichnungen (DXF/DWG) (nur nötig ohne Cloudflared-Add-on)
   8086/tcp: WordCraft – Textverarbeitung (.docx) (nur nötig ohne Cloudflared-Add-on)
-  8087/tcp: DeckCraft – Presentationen (.pptx) (nur nötig ohne Cloudflared-Add-on)
+  8087/tcp: DeckCraft – Präsentationen (.pptx) (nur nötig ohne Cloudflared-Add-on)
   8088/tcp: GridCraft – Tabellenkalkulation (.xlsx) (nur nötig ohne Cloudflared-Add-on)
   8089/tcp: FigCraft – Interface-Design, Prototyping (nur nötig ohne Cloudflared-Add-on)
   8090/tcp: Craft Anything – Reverse Engineering, Rebuild (nur nötig ohne Cloudflared-Add-on)
@@ -58,16 +58,16 @@ schema:
   oidc_client_id: str
   oidc_client_secret: password
   oidc_allowed_users: str
-  vectorcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  photocraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  pdfcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  cadcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  wordcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  deckcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  gridcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  figcraft_url: "match(^(https://[^/\\s]+/?)?$)"
-  craft_anything_url: "match(^(https://[^/\\s]+/?)?$)"
-  files_url: "match(^(https://[^/\\s]+/?)?$)"
+  vectorcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  photocraft_url: "match(^(https://[^/\s]+/?)?$)"
+  pdfcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  cadcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  wordcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  deckcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  gridcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  figcraft_url: "match(^(https://[^/\s]+/?)?$)"
+  craft_anything_url: "match(^(https://[^/\s]+/?)?$)"
+  files_url: "match(^(https://[^/\s]+/?)?$)"
   pdfcraft_compact: bool
-  work_dir: "match(^/share/[^\\s]+$)"
-  legacy_auth_dir: "match(^(/share/[^\\s]+)?$)"
+  work_dir: "match(^/share/[^\s]+$)"
+  legacy_auth_dir: "match(^(/share/[^\s]+)?$)"

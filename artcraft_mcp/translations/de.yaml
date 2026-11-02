@@ -22,6 +22,24 @@ configuration:
   pdfcraft_url:
     name: PdfCraft-URL
     description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = PdfCraft nicht starten.
+  cadcraft_url:
+    name: CADCraft-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = CADCraft nicht starten.
+  wordcraft_url:
+    name: WordCraft-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = WordCraft nicht starten.
+  deckcraft_url:
+    name: DeckCraft-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = DeckCraft nicht starten.
+  gridcraft_url:
+    name: GridCraft-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = GridCraft nicht starten.
+  figcraft_url:
+    name: FigCraft-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = FigCraft nicht starten.
+  craft_anything_url:
+    name: Craft-Anything-URL
+    description: Öffentliche HTTPS-Adresse ohne Pfad. Leer = Craft Anything nicht starten.
   files_url:
     name: Dateien-URL
     description: Öffentliche HTTPS-Adresse ohne Pfad. Stellt den Arbeitsordner als MCP bereit (Dateien auflisten, holen, ablegen). Leer = nicht starten.
@@ -33,9 +51,17 @@ configuration:
     description: Gemeinsamer Ordner unter /share. Die Apps dürfen nur hier lesen und schreiben.
   legacy_auth_dir:
     name: Alte Proxy-Daten
-    description: Nur beim Umzug von einem Docker-Stack. Ordner mit den Unterordnern vectorcraft, photocraft, pdfcraft. Wird einmalig kopiert, wenn noch keine Daten vorhanden sind.
+    description: Nur beim Umzug von einem Docker-Stack. Ordner mit den Unterordnern der Apps
+      (vectorcraft, photocraft, pdfcraft, cadcraft, wordcraft, deckcraft, gridcraft, figcraft,
+      craft-anything). Wird einmalig kopiert, wenn noch keine Daten vorhanden sind.
 network:
   8081/tcp: VectorCraft. Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
   8082/tcp: PhotoCraft. Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
   8083/tcp: PdfCraft. Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
   8084/tcp: Dateien (Arbeitsordner). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8085/tcp: CADCraft (2D-CAD, DXF/DWG). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8086/tcp: WordCraft (Textverarbeitung). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8087/tcp: DeckCraft (Präsentationen). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8088/tcp: GridCraft (Tabellenkalkulation). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8089/tcp: FigCraft (Interface-Design). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.
+  8090/tcp: Craft Anything (Reverse Engineering). Nur eintragen, wenn der Dienst ohne Cloudflared-Add-on von außen erreichbar sein soll.

@@ -3,6 +3,15 @@
 Neue Versionen der Apps trägt der Workflow `update.yml` automatisch ein,
 nachdem der Selbsttest auf aarch64 und amd64 bestanden ist.
 
+## 1.2.0 (2026-11-02)
+
+- Neu: CADCraft 0.16.0 - 2D-CAD, Zeichnungen (DXF/DWG), Port 8085
+- Neu: WordCraft 0.14.0 - Textverarbeitung (.docx, .doc), Port 8086
+- Neu: DeckCraft 0.14.1 - Präsentationen (.pptx), Port 8087
+- Neu: GridCraft 0.15.0 - Tabellenkalkulation (.xlsx), Port 8088
+- Neu: FigCraft 0.14.0 - Interface-Design, Prototyping, Port 8089
+- Neu: Craft Anything 0.3.0 - Reverse Engineering, Rebuild, Port 8090
+
 ## 1.1.7 (2026-11-02)
 
 - VectorCraft 0.19.0 → 0.20.0

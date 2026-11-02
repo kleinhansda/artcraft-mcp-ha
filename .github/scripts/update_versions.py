@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prüft die neuesten Releases von VectorCraft, PhotoCraft, PdfCraft und mcp-auth-proxy.
+"""Prüft die neuesten Releases aller neun ArtCraft-Apps und von mcp-auth-proxy.
 
 Gibt es neue Versionen, werden die ARG-Zeilen im Dockerfile angepasst, die Add-on-Version
 in config.yaml erhöht und ein Eintrag in CHANGELOG.md ergänzt. Ein Release wird nur
@@ -30,6 +30,12 @@ APPS = [
     ("storytold/vectorcraft", "VECTORCRAFT_VERSION", "vectorcraft", "VectorCraft"),
     ("storytold/photocraft", "PHOTOCRAFT_VERSION", "photocraft", "PhotoCraft"),
     ("storytold/pdfcraft", "PDFCRAFT_VERSION", "pdfcraft-cli", "PdfCraft"),
+    ("storytold/cadcraft", "CADCRAFT_VERSION", "cadcraft", "CADCraft"),
+    ("storytold/wordcraft", "WORDCRAFT_VERSION", "wordcraft", "WordCraft"),
+    ("storytold/deckcraft", "DECKCRAFT_VERSION", "deckcraft", "DeckCraft"),
+    ("storytold/gridcraft", "GRIDCRAFT_VERSION", "gridcraft", "GridCraft"),
+    ("storytold/figcraft", "FIGCRAFT_VERSION", "figcraft", "FigCraft"),
+    ("storytold/craft-anything", "CRAFT_ANYTHING_VERSION", "craft-anything", "Craft Anything"),
 ]
 PROXY_REPO = "sigbit/mcp-auth-proxy"
 ARCHES = ("aarch64", "x86_64")
