@@ -1,7 +1,7 @@
 name: ArtCraft MCP
-version: "1.1.7"
+version: "1.2.0"
 slug: artcraft_mcp
-description: VectorCraft, PhotoCraft und PdfCraft als MCP-Server für Claude, mit OIDC-Login über mcp-auth-proxy
+description: VectorCraft, PhotoCraft, PdfCraft, CADCraft, WordCraft, DeckCraft, GridCraft, FigCraft, Craft Anything als MCP-Server für Claude, mit OIDC-Login über mcp-auth-proxy
 url: https://github.com/kleinhansda/artcraft-mcp-ha
 arch:
   - aarch64
@@ -16,11 +16,23 @@ ports:
   8082/tcp: null
   8083/tcp: null
   8084/tcp: null
+  8085/tcp: null
+  8086/tcp: null
+  8087/tcp: null
+  8088/tcp: null
+  8089/tcp: null
+  8090/tcp: null
 ports_description:
   8081/tcp: VectorCraft (nur nötig ohne Cloudflared-Add-on)
   8082/tcp: PhotoCraft (nur nötig ohne Cloudflared-Add-on)
   8083/tcp: PdfCraft (nur nötig ohne Cloudflared-Add-on)
   8084/tcp: Dateien, Arbeitsordner (nur nötig ohne Cloudflared-Add-on)
+  8085/tcp: CADCraft – 2D-CAD, Zeichnungen (DXF/DWG) (nur nötig ohne Cloudflared-Add-on)
+  8086/tcp: WordCraft – Textverarbeitung (.docx) (nur nötig ohne Cloudflared-Add-on)
+  8087/tcp: DeckCraft – Presentationen (.pptx) (nur nötig ohne Cloudflared-Add-on)
+  8088/tcp: GridCraft – Tabellenkalkulation (.xlsx) (nur nötig ohne Cloudflared-Add-on)
+  8089/tcp: FigCraft – Interface-Design, Prototyping (nur nötig ohne Cloudflared-Add-on)
+  8090/tcp: Craft Anything – Reverse Engineering, Rebuild (nur nötig ohne Cloudflared-Add-on)
 options:
   oidc_configuration_url: null
   oidc_provider_name: OIDC
@@ -30,6 +42,12 @@ options:
   vectorcraft_url: ""
   photocraft_url: ""
   pdfcraft_url: ""
+  cadcraft_url: ""
+  wordcraft_url: ""
+  deckcraft_url: ""
+  gridcraft_url: ""
+  figcraft_url: ""
+  craft_anything_url: ""
   files_url: ""
   pdfcraft_compact: true
   work_dir: /share/artcraft/work
@@ -43,6 +61,12 @@ schema:
   vectorcraft_url: "match(^(https://[^/\\s]+/?)?$)"
   photocraft_url: "match(^(https://[^/\\s]+/?)?$)"
   pdfcraft_url: "match(^(https://[^/\\s]+/?)?$)"
+  cadcraft_url: "match(^(https://[^/\\s]+/?)?$)"
+  wordcraft_url: "match(^(https://[^/\\s]+/?)?$)"
+  deckcraft_url: "match(^(https://[^/\\s]+/?)?$)"
+  gridcraft_url: "match(^(https://[^/\\s]+/?)?$)"
+  figcraft_url: "match(^(https://[^/\\s]+/?)?$)"
+  craft_anything_url: "match(^(https://[^/\\s]+/?)?$)"
   files_url: "match(^(https://[^/\\s]+/?)?$)"
   pdfcraft_compact: bool
   work_dir: "match(^/share/[^\\s]+$)"
