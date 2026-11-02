@@ -43,7 +43,7 @@ Hintergrund, Testergebnisse und Entscheidungen stehen in
 ## Konfiguration
 
 | Option | Bedeutung |
-|---|---|---|
+|---|---|
 | `oidc_configuration_url` | Discovery-URL, z. B. `https://id.example.com/.well-known/openid-configuration` |
 | `oidc_provider_name` | Name auf der Anmeldeseite, z. B. `Pocket ID` |
 | `oidc_client_id`, `oidc_client_secret` | Ein Client für alle Apps |
