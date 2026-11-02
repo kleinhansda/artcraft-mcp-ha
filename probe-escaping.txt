@@ -1,8 +1,0 @@
-probe v1 - escaping test - temporary file
-a1=\s
-a2=\\s
-a4=\\\\s
-a8=\\\\\\\\s
-mix=a\sb\\sc\\\\sd\\\\\\\\se
-win=C:\Users\Temp
-regex=[a-z]+\s*
