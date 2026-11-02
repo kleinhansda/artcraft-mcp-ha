@@ -2,12 +2,18 @@
 # Hier steht, mit welchen Optionen jede App ihren MCP-Server startet.
 # Ändert ein neues Release eine Option, schlägt der Selbsttest im Build fehl.
 
-APPS=(vectorcraft photocraft pdfcraft files)
+APPS=(vectorcraft photocraft pdfcraft cadcraft wordcraft deckcraft gridcraft figcraft craft-anything files)
 
 declare -A PORTS=(
   [vectorcraft]=8081
   [photocraft]=8082
   [pdfcraft]=8083
+  [cadcraft]=8085
+  [wordcraft]=8086
+  [deckcraft]=8087
+  [gridcraft]=8088
+  [figcraft]=8089
+  [craft-anything]=8090
   [files]=8084
 )
 
@@ -23,6 +29,18 @@ app_cmd() {
     pdfcraft)
       CMD=(pdfcraft-cli mcp --root "$work")
       if [ "${PDFCRAFT_COMPACT:-true}" = true ]; then CMD+=(--compact); fi ;;
+    cadcraft)
+      CMD=(cadcraft-cli mcp --headless --automation-read-root "$work" --automation-write-root "$work") ;;
+    wordcraft)
+      CMD=(wordcraft-cli mcp --automation-read-root "$work" --automation-write-root "$work") ;;
+    deckcraft)
+      CMD=(deckcraft-cli mcp --automation-read-root "$work" --automation-write-root "$work") ;;
+    gridcraft)
+      CMD=(gridcraft-cli mcp --automation-read-root "$work" --automation-write-root "$work") ;;
+    figcraft)
+      CMD=(figcraft-cli mcp --automation-read-root "$work" --automation-write-root "$work") ;;
+    craft-anything)
+      CMD=(craft-anything-cli mcp --automation-read-root "$work" --automation-write-root "$work") ;;
     files)
       CMD=(python3 /usr/local/lib/artcraft/files_mcp.py "$work") ;;
     *)
