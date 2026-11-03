@@ -1,7 +1,10 @@
 #!/bin/bash
-# Startet je App mit eingetragener URL einen mcp-auth-proxy, der den MCP-Server der App
-# über stdio anbindet. Stürzt ein Dienst ab, startet ihn seine Schleife neu,
-# die anderen Apps laufen weiter.
+# Startet je App zwei mögliche Zugänge, die sich nicht ausschließen:
+# - öffentlich: App mit eingetragener URL bekommt einen mcp-auth-proxy (OIDC-Login),
+#   Port 8081 bis 8090.
+# - intern: App in internal_apps bekommt die Brücke mcp_bridge.py ohne Anmeldung,
+#   Port 9081 bis 9090, nur im internen Docker-Netz erreichbar (z. B. für Open WebUI).
+# Stürzt ein Dienst ab, startet ihn seine Schleife neu, die anderen laufen weiter.
 set -euo pipefail
 
 # shellcheck source=rootfs/usr/local/lib/artcraft/apps.sh
@@ -9,10 +12,13 @@ source /usr/local/lib/artcraft/apps.sh
 
 OPTS="${ARTCRAFT_OPTIONS:-/data/options.json}"   # für Tests überschreibbar
 DATA="${ARTCRAFT_DATA:-/data}"
+VERSIONS="${ARTCRAFT_VERSIONS:-/usr/local/share/artcraft-versions}"
+BRIDGE="${ARTCRAFT_BRIDGE:-/usr/local/lib/artcraft/mcp_bridge.py}"
 
 log()    { echo "[artcraft] $*"; }
 fehler() { echo "[artcraft] FEHLER: $*" >&2; exit 1; }
 opt()    { jq -r --arg k "$1" '.[$k] // "" | tostring' "$OPTS"; }
+intern() { jq -e --arg a "$1" '(.internal_apps // []) | index($a) != null' "$OPTS" >/dev/null; }
 
 [ -f "$OPTS" ] || fehler "$OPTS fehlt"
 
@@ -25,24 +31,50 @@ WORK="$(opt work_dir)"
 LEGACY="$(opt legacy_auth_dir)"
 PDFCRAFT_COMPACT="$(opt pdfcraft_compact)"
 
-[ -n "$OIDC_CONFIGURATION_URL" ] || fehler "oidc_configuration_url ist leer"
-[ -n "$OIDC_CLIENT_ID" ]         || fehler "oidc_client_id ist leer"
-[ -n "$OIDC_CLIENT_SECRET" ]     || fehler "oidc_client_secret ist leer"
-[ -n "$WORK" ]                   || fehler "work_dir ist leer"
+[ -n "$WORK" ] || fehler "work_dir ist leer"
 
-# Der Proxy liest die OIDC-Werte aus der Umgebung (so taucht das Secret nicht in der
-# Prozessliste auf). Die Apps selbst bekommen die Werte nicht, siehe "env -u" unten.
-export OIDC_CONFIGURATION_URL OIDC_CLIENT_ID OIDC_CLIENT_SECRET PDFCRAFT_COMPACT
-if [ -n "$OIDC_ALLOWED_USERS" ]; then export OIDC_ALLOWED_USERS; fi
+# Welche App läuft wie? Optionsnamen nutzen "_" (craft_anything_url), App-Namen "-".
+declare -A URLS=()
+oeffentlich=0
+for app in "${APPS[@]}"; do
+  url="$(opt "${app//-/_}_url")"
+  if [ -n "$url" ]; then URLS[$app]="${url%/}"; oeffentlich=$(( oeffentlich + 1 )); fi
+done
+
+# OIDC ist nur für den öffentlichen Zugang Pflicht.
+if (( oeffentlich > 0 )); then
+  [ -n "$OIDC_CONFIGURATION_URL" ] || fehler "oidc_configuration_url ist leer (nötig für öffentliche URLs)"
+  [ -n "$OIDC_CLIENT_ID" ]         || fehler "oidc_client_id ist leer (nötig für öffentliche URLs)"
+  [ -n "$OIDC_CLIENT_SECRET" ]     || fehler "oidc_client_secret ist leer (nötig für öffentliche URLs)"
+  # Der Proxy liest die OIDC-Werte aus der Umgebung (so taucht das Secret nicht in der
+  # Prozessliste auf). Die Apps selbst bekommen die Werte nicht, siehe "env -u" unten.
+  export OIDC_CONFIGURATION_URL OIDC_CLIENT_ID OIDC_CLIENT_SECRET
+  if [ -n "$OIDC_ALLOWED_USERS" ]; then export OIDC_ALLOWED_USERS; fi
+fi
+export PDFCRAFT_COMPACT
 export HOME=/tmp
 
 mkdir -p "$WORK"
 log "Versionen:"
-sed 's/^/[artcraft]   /' /usr/local/share/artcraft-versions
+sed 's/^/[artcraft]   /' "$VERSIONS"
 log "Arbeitsordner: $WORK"
 
-dienst() {
-  local app=$1 url=$2 port=${PORTS[$1]} data="$DATA/$1" pause=5 start
+# neustarten <app> <befehl ...>: führt den Befehl in einer Schleife aus.
+# Länger gelaufen: kurz warten. Sofort wieder beendet: Pause verdoppeln, höchstens 60 s.
+neustarten() {
+  local app=$1 pause=5 start
+  shift
+  while true; do
+    start=$SECONDS
+    "$@" 2>&1 | sed -u "s/^/[$app] /" || true
+    if (( SECONDS - start > 60 )); then pause=5; elif (( pause < 60 )); then pause=$(( pause * 2 )); fi
+    log "$app: beendet, Neustart in ${pause} s"
+    sleep "$pause"
+  done
+}
+
+oeffentlicher_dienst() {
+  local app=$1 url=$2 port=${PORTS[$1]} data="$DATA/$1"
   mkdir -p "$data"
 
   # Einmalige Übernahme der Proxy-Daten (registrierte Clients, Schlüssel) aus einer
@@ -53,22 +85,24 @@ dienst() {
   fi
 
   app_cmd "$app" "$WORK"
-  while true; do
-    start=$SECONDS
-    log "$app: Start auf Port $port für $url"
-    mcp-auth-proxy \
-      --listen ":$port" \
-      --external-url "$url" \
-      --no-auto-tls \
-      --data-path "$data" \
-      --oidc-provider-name "$PROVIDER" \
-      -- env -u OIDC_CLIENT_SECRET -u OIDC_CLIENT_ID -u OIDC_CONFIGURATION_URL -u OIDC_ALLOWED_USERS \
-      "${CMD[@]}" 2>&1 | sed -u "s/^/[$app] /" || true
-    # Länger gelaufen: kurz warten. Sofort wieder beendet: Pause verdoppeln, höchstens 60 s.
-    if (( SECONDS - start > 60 )); then pause=5; elif (( pause < 60 )); then pause=$(( pause * 2 )); fi
-    log "$app: beendet, Neustart in ${pause} s"
-    sleep "$pause"
-  done
+  log "$app: öffentlich auf Port $port für $url (mit Login)"
+  neustarten "$app" mcp-auth-proxy \
+    --listen ":$port" \
+    --external-url "$url" \
+    --no-auto-tls \
+    --data-path "$data" \
+    --oidc-provider-name "$PROVIDER" \
+    -- env -u OIDC_CLIENT_SECRET -u OIDC_CLIENT_ID -u OIDC_CONFIGURATION_URL -u OIDC_ALLOWED_USERS \
+    "${CMD[@]}"
+}
+
+interner_dienst() {
+  local app=$1 port=${INTERNAL_PORTS[$1]}
+  app_cmd "$app" "$WORK"
+  log "$app: intern ohne Login unter http://$HOST:$port/mcp"
+  neustarten "$app:intern" python3 "$BRIDGE" "$port" -- \
+    env -u OIDC_CLIENT_SECRET -u OIDC_CLIENT_ID -u OIDC_CONFIGURATION_URL -u OIDC_ALLOWED_USERS \
+    "${CMD[@]}"
 }
 
 beenden() {
@@ -80,16 +114,26 @@ beenden() {
 }
 trap beenden TERM INT
 
+# Hostname des Add-ons im internen Netz (Form xxxxxxxx-artcraft-mcp), nur für das Log.
+HOST="$(hostname)"
+
 n=0
 for app in "${APPS[@]}"; do
-  url="$(opt "${app}_url")"
-  if [ -n "$url" ]; then
-    dienst "$app" "${url%/}" &
+  gestartet=0
+  if [ -n "${URLS[$app]:-}" ]; then
+    oeffentlicher_dienst "$app" "${URLS[$app]}" &
+    gestartet=1
+  fi
+  if intern "$app"; then
+    interner_dienst "$app" &
+    gestartet=1
+  fi
+  if (( gestartet )); then
     n=$(( n + 1 ))
   else
-    log "$app: keine URL eingetragen, wird nicht gestartet"
+    log "$app: weder URL noch interner Zugriff eingetragen, wird nicht gestartet"
   fi
 done
-[ "$n" -gt 0 ] || fehler "Keine App aktiviert. Mindestens eine der URLs eintragen."
+(( n > 0 )) || fehler "Keine App aktiviert. Eine URL eintragen oder Apps unter internal_apps wählen."
 
 wait
