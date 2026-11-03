@@ -7,23 +7,28 @@ Remote-MCP-Server für Claude erreichbar, auch für die Smartphone-App. Vor jede
 OAuth-Server (mit Dynamic Client Registration) und lässt nur Nutzer durch, die sich bei deinem
 OIDC-Anbieter (z. B. Pocket ID) anmelden.
 
-| App | Zweck | Port |
-|---|---|---|
-| VectorCraft | Vektorgrafik, Etiketten, SVG/PDF-Export | 8081 |
-| PhotoCraft | Bildbearbeitung, PSD | 8082 |
-| PdfCraft | PDFs bearbeiten, prüfen, zusammenführen | 8083 |
-| CADCraft | 2D-CAD, Zeichnungen (DXF/DWG) | 8085 |
-| WordCraft | Textverarbeitung (.docx, .doc) | 8086 |
-| DeckCraft | Präsentationen (.pptx) | 8087 |
-| GridCraft | Tabellenkalkulation (.xlsx) | 8088 |
-| FigCraft | Interface-Design, Prototyping | 8089 |
-| Craft Anything | Reverse Engineering, Rebuild | 8090 |
-| Dateien | Arbeitsordner für Claude: auflisten, holen, ablegen | 8084 |
+Zusätzlich oder stattdessen können die Apps **intern ohne Login** laufen, z. B. für
+Open WebUI auf demselben Home Assistant (siehe [Interner Zugriff](#interner-zugriff-ohne-login-z-b-open-webui)).
+
+| App | Zweck | Port öffentlich | Port intern | `internal_apps` |
+|---|---|---|---|---|
+| VectorCraft | Vektorgrafik, Etiketten, SVG/PDF-Export | 8081 | 9081 | `vectorcraft` |
+| PhotoCraft | Bildbearbeitung, PSD | 8082 | 9082 | `photocraft` |
+| PdfCraft | PDFs bearbeiten, prüfen, zusammenführen | 8083 | 9083 | `pdfcraft` |
+| CADCraft | 2D-CAD, Zeichnungen (DXF/DWG) | 8085 | 9085 | `cadcraft` |
+| WordCraft | Textverarbeitung (.docx, .doc) | 8086 | 9086 | `wordcraft` |
+| DeckCraft | Präsentationen (.pptx) | 8087 | 9087 | `deckcraft` |
+| GridCraft | Tabellenkalkulation (.xlsx) | 8088 | 9088 | `gridcraft` |
+| FigCraft | Interface-Design, Prototyping | 8089 | 9089 | `figcraft` |
+| Craft Anything | Reverse Engineering, Rebuild | 8090 | 9090 | `craft-anything` |
+| Dateien | Arbeitsordner: auflisten, holen, ablegen | 8084 | 9084 | `files` |
 
 Hintergrund, Testergebnisse und Entscheidungen stehen in
 [docs/NOTIZEN.md](https://github.com/kleinhansda/artcraft-mcp-ha/blob/main/docs/NOTIZEN.md).
 
 ## Voraussetzungen
+
+Nur für den öffentlichen Zugang (z. B. Claude). Für den rein internen Zugang ist nichts davon nötig.
 
 - Ein OIDC-Anbieter mit **einem** Client für alle Apps (vertraulicher Client mit Secret).
 - Je App ein öffentlicher HTTPS-Hostname, z. B. über das Cloudflared-Add-on.
@@ -37,18 +42,19 @@ Hintergrund, Testergebnisse und Entscheidungen stehen in
 2. **ArtCraft MCP** installieren. Home Assistant baut das Image dabei auf dem Gerät und lädt die
    Release-Dateien von GitHub. Das dauert einige Minuten.
 3. Konfiguration ausfüllen (siehe unten), speichern, starten.
-4. Im Log prüfen: Die Versionen stehen oben, je App folgt `Start auf Port …`, bei VectorCraft
-   zusätzlich `files confined: read root …, write root …`.
+4. Im Log prüfen: Die Versionen stehen oben, je App folgt `öffentlich auf Port …` bzw.
+   `intern ohne Login unter …`, bei VectorCraft zusätzlich `files confined: read root …, write root …`.
 
 ## Konfiguration
 
 | Option | Bedeutung |
 |---|---|
-| `oidc_configuration_url` | Discovery-URL, z. B. `https://id.example.com/.well-known/openid-configuration` |
+| `oidc_configuration_url` | Discovery-URL, z. B. `https://id.example.com/.well-known/openid-configuration`. Die OIDC-Optionen sind nur nötig, wenn eine öffentliche URL eingetragen ist |
 | `oidc_provider_name` | Name auf der Anmeldeseite, z. B. `Pocket ID` |
 | `oidc_client_id`, `oidc_client_secret` | Ein Client für alle Apps |
 | `oidc_allowed_users` | Optional, kommagetrennt (Standard: E-Mail-Adresse). Zusätzlich zur Gruppenbeschränkung beim Anbieter |
 | `vectorcraft_url`, `photocraft_url`, `pdfcraft_url`, `cadcraft_url`, `wordcraft_url`, `deckcraft_url`, `gridcraft_url`, `figcraft_url`, `craft_anything_url`, `files_url` | Öffentliche Adresse ohne Pfad, z. B. `https://vectorcraft.example.com`. Leer = App wird nicht gestartet |
+| `internal_apps` | Apps, die zusätzlich intern ohne Login erreichbar sind, siehe unten. Leer = kein interner Zugriff |
 | `pdfcraft_compact` | `true`: Kern-Tools plus `tool_search` und `tool_call` statt über 160 Tools |
 | `work_dir` | Gemeinsamer Arbeitsordner unter `/share`, Standard `/share/artcraft/work` |
 | `legacy_auth_dir` | Nur beim Umzug von einem Docker-Stack, siehe unten |
@@ -112,6 +118,38 @@ Bildschirm nicht:
   `invoke_menu`, `press_key`, `pointer_gesture`, `select_tool`
 - PhotoCraft: `ui_inspect`, `ui_menu_invoke`, `ui_pointer`, `ui_screenshot`, `ui_set`
 
+## Interner Zugriff ohne Login (z. B. Open WebUI)
+
+Für Clients, die auf demselben Home Assistant laufen (z. B. Open WebUI als App), kann jede App
+zusätzlich **ohne Anmeldung** im internen Docker-Netz bereitstehen. Dafür die App unter
+`internal_apps` auswählen. Öffentliche URL und interner Zugriff schließen sich nicht aus.
+
+- Adresse: `http://<add-on-hostname>:<port intern>/mcp`, z. B. `http://xxxxxxxx-artcraft-mcp:9081/mcp`.
+  Das Log zeigt beim Start für jede App die fertige Adresse (`… intern ohne Login unter …`).
+- Ports 9081 bis 9090 (öffentlicher Port + 1000). Sie stehen nicht unter **Netzwerk** und werden
+  nie auf den Host gelegt, sind also aus dem Heimnetz nicht erreichbar.
+- Kein OIDC nötig, wenn nur interne Apps gewählt sind.
+- Die App startet erst beim ersten Zugriff, ungenutzte Apps belegen keinen Speicher.
+- Läuft eine App öffentlich **und** intern, sind das zwei getrennte Prozesse mit getrennten offenen Dokumenten.
+
+### Open WebUI einrichten
+
+Admin-Bereich → Einstellungen → Externe Werkzeuge (bzw. Verbindungen) → **+**:
+
+| Feld | Wert |
+|---|---|
+| Typ | MCP (Streamable HTTP) |
+| URL | `http://<add-on-hostname>:9081/mcp` (je App eine Verbindung) |
+| Authentifizierung | Keine |
+
+Danach die Werkzeuge im Modell oder im Chat zuschalten. Die UI-Tools (siehe oben) dort deaktivieren
+bzw. im System-Prompt ausschließen, sie funktionieren ohne Bildschirm nicht.
+
+**Sicherheit:** Jeder Container im internen Netz von Home Assistant (alle Apps, Home Assistant
+selbst) und Apps mit Host-Netzwerk können die internen Ports ohne Login nutzen. Das schließt den
+Lese- und Schreibzugriff auf den Arbeitsordner ein (insbesondere `files`). Nur Apps freigeben, die
+intern gebraucht werden. Anfragen aus dem Browser (mit `Origin`-Header) werden abgelehnt.
+
 ## Arbeitsordner
 
 Alle Apps lesen und schreiben nur in `work_dir` (Standard `/share/artcraft/work`). Eine in
@@ -173,6 +211,7 @@ Alte und neue Installation stören sich nicht, solange der Tunnel nur auf eine z
 ## Sicherheit
 
 - Login über OIDC, optional zusätzlich `oidc_allowed_users`.
+- Interner Zugriff (`internal_apps`) ohne Login, nur im internen Docker-Netz, Ports nie auf dem Host.
 - Die Apps WordCraft, DeckCraft und FigCraft sind auf `work_dir` begrenzt (Zugriffe außerhalb
   werden abgelehnt). CADCraft, GridCraft und Craft Anything bieten diese Begrenzung nicht, ihre
   Tools können außerhalb des Arbeitsordners lesen.
@@ -189,7 +228,10 @@ PhotoCraft braucht mit einem 24-MP-Foto rund 0,5 GB. Auf Geräten mit wenig RAM 
 | Symptom | Ursache | Lösung |
 |---|---|---|
 | App startet nicht, Log: `… ist leer` | Pflichtoption fehlt | Konfiguration ergänzen |
-| Log: `Keine App aktiviert` | Keine der URLs eingetragen | Mindestens eine URL eintragen |
+| Log: `Keine App aktiviert` | Weder URL noch `internal_apps` eingetragen | URL eintragen oder Apps unter `internal_apps` wählen |
+| Log: `oidc_… ist leer (nötig für öffentliche URLs)` | Öffentliche URL ohne OIDC-Daten | OIDC ergänzen oder URL leeren und `internal_apps` nutzen |
+| Open WebUI: Verbindung schlägt fehl | Falscher Hostname oder Port, App nicht in `internal_apps` | Adresse aus dem Log übernehmen, Pfad `/mcp` nicht vergessen |
+| Interner Zugriff: `Origin nicht erlaubt` (403) | Aufruf aus dem Browser | Nur serverseitige Clients wie Open WebUI nutzen |
 | Log: `<app>: beendet, Neustart in …` wiederholt | App oder Proxy beendet sich sofort | Zeilen davor im Log lesen, oft eine falsche URL oder ein nicht erreichbarer OIDC-Anbieter |
 | Login-Seite leer, kein Redirect | Client-ID oder Secret falsch | Konfiguration prüfen |
 | Anbieter meldet ungültige Redirect-URI | Callback des Hostnamens fehlt im Client | Alle Callback-URLs eintragen |

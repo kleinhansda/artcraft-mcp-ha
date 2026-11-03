@@ -1,7 +1,7 @@
 name: ArtCraft MCP
-version: "1.2.1"
+version: "1.3.0"
 slug: artcraft_mcp
-description: VectorCraft, PhotoCraft, PdfCraft, CADCraft, WordCraft, DeckCraft, GridCraft, FigCraft, Craft Anything als MCP-Server für Claude, mit OIDC-Login über mcp-auth-proxy
+description: VectorCraft, PhotoCraft, PdfCraft, CADCraft, WordCraft, DeckCraft, GridCraft, FigCraft, Craft Anything als MCP-Server für Claude (OIDC-Login über mcp-auth-proxy) und intern ohne Login, z. B. für Open WebUI
 url: https://github.com/kleinhansda/artcraft-mcp-ha
 arch:
   - aarch64
@@ -49,15 +49,16 @@ options:
   figcraft_url: ""
   craft_anything_url: ""
   files_url: ""
+  internal_apps: []
   pdfcraft_compact: true
   work_dir: /share/artcraft/work
   legacy_auth_dir: ""
 schema:
-  oidc_configuration_url: url
-  oidc_provider_name: str
-  oidc_client_id: str
-  oidc_client_secret: password
-  oidc_allowed_users: str
+  oidc_configuration_url: url?
+  oidc_provider_name: str?
+  oidc_client_id: str?
+  oidc_client_secret: password?
+  oidc_allowed_users: str?
   vectorcraft_url: "match(^(https://[^/\\s]+/?)?$)"
   photocraft_url: "match(^(https://[^/\\s]+/?)?$)"
   pdfcraft_url: "match(^(https://[^/\\s]+/?)?$)"
@@ -68,6 +69,8 @@ schema:
   figcraft_url: "match(^(https://[^/\\s]+/?)?$)"
   craft_anything_url: "match(^(https://[^/\\s]+/?)?$)"
   files_url: "match(^(https://[^/\\s]+/?)?$)"
+  internal_apps:
+    - "list(vectorcraft|photocraft|pdfcraft|cadcraft|wordcraft|deckcraft|gridcraft|figcraft|craft-anything|files)"
   pdfcraft_compact: bool
   work_dir: "match(^/share/[^\\s]+$)"
   legacy_auth_dir: "match(^(/share/[^\\s]+)?$)"

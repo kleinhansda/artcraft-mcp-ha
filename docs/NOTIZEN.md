@@ -130,6 +130,26 @@ Gemessen am 2026-10-17 auf x86 (Xeon 2,1 GHz):
 
 Die Werte für den Raspberry Pi sind geschätzt (Faktor 4 bis 6), nicht gemessen.
 
+## Interner Zugriff ohne Login (1.3.0)
+
+Anlass: Open WebUI läuft als App auf demselben Home Assistant und soll die Apps ohne Umweg über
+Cloudflare und OIDC nutzen.
+
+- **mcp-auth-proxy 2.10.2 hat keinen Modus ohne Login.** Ohne Anbieter und Passwort antwortet er
+  auf `/mcp` mit 401 (getestet 2026-11-03). Ein Passwort statt OIDC hilft nicht, Open WebUI müsste
+  dann den OAuth-Ablauf des Proxys durchlaufen.
+- **Gewählt: eigene Brücke `mcp_bridge.py`** (nur Standardbibliothek, wie `files_mcp.py`) statt
+  supergateway (bräuchte Node.js im Image) oder mcp-proxy (zusätzliche Python-Pakete).
+  Antworten als JSON, GET öffnet einen leeren SSE-Kanal mit Keepalive. Mit 405 verbindet sich das
+  MCP-SDK 2.x jede Sekunde neu.
+- **Getestet** mit dem offiziellen MCP-Python-SDK 1.30 und 2.3 (initialize, tools/list, tools/call,
+  zwei Clients parallel) und im Selbsttest mit dem Dateien-Server.
+- Eigene Ports 9081 bis 9090 statt derselben wie öffentlich: Beide Zugänge können gleichzeitig
+  laufen, und die Adresse in Open WebUI bleibt gleich, wenn später eine öffentliche URL dazukommt.
+- Die Ports stehen nicht in `config.yaml`, damit sie nie auf den Host gelegt werden.
+- Schutz gegen DNS-Rebinding: Requests mit `Origin`-Header werden abgelehnt (Open WebUI ruft
+  serverseitig ohne `Origin` auf).
+
 ## Offene Punkte
 
 - [ ] Echte Rechenzeiten auf aarch64 messen und hier eintragen

@@ -1,7 +1,7 @@
 configuration:
   oidc_configuration_url:
     name: OIDC configuration URL
-    description: Discovery URL of the identity provider, e.g. https://id.example.com/.well-known/openid-configuration
+    description: Discovery URL of the identity provider, e.g. https://id.example.com/.well-known/openid-configuration. Only needed if a public URL is set.
   oidc_provider_name:
     name: Identity provider name
     description: Shown on the login page, e.g. Pocket ID.
@@ -43,6 +43,12 @@ configuration:
   files_url:
     name: Files URL
     description: Public HTTPS address without path. Exposes the work folder as MCP (list, get, put files). Empty = do not start.
+  internal_apps:
+    name: Internal access without login
+    description: Apps that are additionally reachable without login in the internal Docker network,
+      e.g. for Open WebUI on the same Home Assistant. Address http://<add-on-hostname>:<port>/mcp,
+      ports 9081 to 9090 (public port + 1000). The app starts on first access.
+      Empty = no internal access.
   pdfcraft_compact:
     name: PdfCraft compact
     description: Offer only the core tools plus tool_search and tool_call (17 instead of more than 160 tools).

@@ -3,6 +3,14 @@
 Neue Versionen der Apps trägt der Workflow `update.yml` automatisch ein,
 nachdem der Selbsttest auf aarch64 und amd64 bestanden ist.
 
+## 1.3.0 (2026-11-03)
+
+- Neu: Interner Zugriff ohne Login (`internal_apps`), z. B. für Open WebUI auf demselben
+  Home Assistant. Je App unter `http://<add-on-hostname>:9081/mcp` usw. (Port + 1000), nur im
+  internen Docker-Netz. Die App startet erst beim ersten Zugriff.
+- OIDC-Optionen sind nur noch Pflicht, wenn eine öffentliche URL eingetragen ist.
+- Behoben: Craft Anything startete trotz `craft_anything_url` nicht (Optionsname falsch gelesen).
+
 ## 1.2.1 (2026-11-03)
 
 - VectorCraft 0.20.0 → 0.21.0

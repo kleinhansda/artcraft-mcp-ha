@@ -5,7 +5,8 @@ DeckCraft, GridCraft, FigCraft und Craft Anything (plus einen Datei-Server für 
 Arbeitsordner) von [storytold](https://github.com/storytold) als Remote-MCP-Server für Claude
 bereitstellt. Login über einen OIDC-Anbieter (z. B. Pocket ID) mit
 [mcp-auth-proxy](https://github.com/sigbit/mcp-auth-proxy), Zugang z. B. über das
-Cloudflared-Add-on.
+Cloudflared-Add-on. Optional zusätzlich intern ohne Login, z. B. für Open WebUI auf demselben
+Home Assistant.
 
 [![Repository in Home Assistant hinzufügen](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fkleinhansda%2Fartcraft-mcp-ha)
 
@@ -21,7 +22,8 @@ Oder von Hand: Einstellungen → Apps (Add-ons) → App Store → ⋮ → Reposi
 | [`docs/NOTIZEN.md`](docs/NOTIZEN.md) | Hintergrund: Apps im Vergleich, Testergebnisse, Ressourcen, verworfene Varianten |
 | `artcraft_mcp/Dockerfile` | Image: Debian, Release-Binaries mit Prüfsummen, feste Versionen |
 | `artcraft_mcp/rootfs/usr/local/lib/artcraft/files_mcp.py` | Kleiner MCP-Server für den Arbeitsordner (`files_list`, `file_get`, `file_put`) |
-| `artcraft_mcp/rootfs/run.sh` | Startet je App einen Proxy, startet abgestürzte Dienste einzeln neu |
+| `artcraft_mcp/rootfs/usr/local/lib/artcraft/mcp_bridge.py` | Brücke stdio → Streamable HTTP ohne Login für den internen Zugriff |
+| `artcraft_mcp/rootfs/run.sh` | Startet je App Proxy und/oder Brücke, startet abgestürzte Dienste einzeln neu |
 | `artcraft_mcp/rootfs/usr/local/lib/artcraft/apps.sh` | Startbefehle und Ports der Apps |
 | `.github/workflows/update.yml` | Prüft täglich neue Releases, testet und erhöht dann die Version |
 

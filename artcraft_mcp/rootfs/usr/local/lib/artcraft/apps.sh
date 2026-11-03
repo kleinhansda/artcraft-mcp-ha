@@ -1,3 +1,4 @@
+# shellcheck shell=bash disable=SC2034  # wird von run.sh und artcraft-selftest eingebunden
 # Gemeinsame Definitionen für run.sh und artcraft-selftest.
 # Hier steht, mit welchen Optionen jede App ihren MCP-Server startet.
 # Ändert ein neues Release eine Option, schlägt der Selbsttest im Build fehl.
@@ -16,6 +17,12 @@ declare -A PORTS=(
   [craft-anything]=8090
   [files]=8084
 )
+
+# Interner Zugriff ohne Anmeldung (internal_apps): je App Port + 1000, also 9081 bis 9090.
+# Diese Ports stehen bewusst nicht in config.yaml und werden nie auf den Host gelegt.
+declare -A INTERNAL_PORTS=()
+for _app in "${!PORTS[@]}"; do INTERNAL_PORTS[$_app]=$(( PORTS[$_app] + 1000 )); done
+unset _app
 
 # app_cmd <app> <arbeitsordner>: setzt das Array CMD auf den Startbefehl der App.
 # PDFCRAFT_COMPACT=false schaltet bei PdfCraft die kompakte Tool-Liste ab.
