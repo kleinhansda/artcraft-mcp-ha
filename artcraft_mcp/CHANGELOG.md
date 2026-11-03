@@ -3,6 +3,17 @@
 Neue Versionen der Apps trägt der Workflow `update.yml` automatisch ein,
 nachdem der Selbsttest auf aarch64 und amd64 bestanden ist.
 
+## 1.2.1 (2026-11-03)
+
+- VectorCraft 0.20.0 → 0.21.0
+- PhotoCraft 0.19.0 → 0.20.1
+- PdfCraft 0.17.0 → 0.18.0
+- CADCraft 0.16.0 → 0.17.0
+- WordCraft 0.14.0 → 0.15.0
+- DeckCraft 0.14.1 → 0.15.0
+- GridCraft 0.15.0 → 0.16.0
+- FigCraft 0.14.0 → 0.15.0
+
 ## 1.2.0 (2026-11-02)
 
 - Neu: CADCraft 0.16.0 - 2D-CAD, Zeichnungen (DXF/DWG), Port 8085

@@ -1,5 +1,5 @@
 name: ArtCraft MCP
-version: "1.2.0"
+version: "1.2.1"
 slug: artcraft_mcp
 description: VectorCraft, PhotoCraft, PdfCraft, CADCraft, WordCraft, DeckCraft, GridCraft, FigCraft, Craft Anything als MCP-Server für Claude, mit OIDC-Login über mcp-auth-proxy
 url: https://github.com/kleinhansda/artcraft-mcp-ha
